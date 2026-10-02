@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Sample content, only with the "dev" Liquibase context -->
+    <changeSet id="00000000000201" author="lingua" context="dev">
+        <sql>
+            INSERT INTO category (id, name, description, language_id) VALUES
+                (1, 'Vocabulary', 'Everyday words and their meaning', (SELECT id FROM language WHERE code = 'en')),
+                (2, 'Grammar', 'Tenses, articles and sentence structure', (SELECT id FROM language WHERE code = 'en')),
+                (3, 'Everyday phrases', 'Useful expressions for daily situations', (SELECT id FROM language WHERE code = 'en'));
+
+            INSERT INTO question (id, question_text, difficulty, category_id, created_at) VALUES
+                (1, 'Which word means the opposite of "hot"?', 'EASY', 1, now()),
+                (2, 'What do you call the meal you eat in the morning?', 'EASY', 1, now()),
+                (3, 'Which word is a synonym of "quick"?', 'MEDIUM', 1, now()),
+                (4, 'Which word means "to make something better"?', 'HARD', 1, now()),
+                (5, 'Complete: "She ___ a teacher."', 'EASY', 2, now()),
+                (6, 'Complete: "They ___ to the cinema yesterday."', 'MEDIUM', 2, now()),
+                (7, 'Complete: "If I ___ rich, I would travel the world."', 'HARD', 2, now()),
+                (8, 'How do you greet someone in the morning?', 'EASY', 3, now()),
+                (9, 'What do you say when you did not hear what someone said?', 'MEDIUM', 3, now()),
+                (10, 'What does "It is raining cats and dogs" mean?', 'HARD', 3, now());
+
+            INSERT INTO choice (question_id, choice_type, choice_text, correct, sort_order) VALUES
+                (1, 'TEXT', 'Cold', true, 0), (1, 'TEXT', 'Warm', false, 1), (1, 'TEXT', 'Big', false, 2),
+                (2, 'TEXT', 'Dinner', false, 0), (2, 'TEXT', 'Breakfast', true, 1), (2, 'TEXT', 'Lunch', false, 2),
+                (3, 'TEXT', 'Slow', false, 0), (3, 'TEXT', 'Heavy', false, 1), (3, 'TEXT', 'Fast', true, 2), (3, 'TEXT', 'Late', false, 3),
+                (4, 'TEXT', 'To improve', true, 0), (4, 'TEXT', 'To remove', false, 1), (4, 'TEXT', 'To approve', false, 2), (4, 'TEXT', 'To prove', false, 3),
+                (5, 'TEXT', 'is', true, 0), (5, 'TEXT', 'are', false, 1),
+                (6, 'TEXT', 'go', false, 0), (6, 'TEXT', 'went', true, 1), (6, 'TEXT', 'gone', false, 2),
+                (7, 'TEXT', 'am', false, 0), (7, 'TEXT', 'was', false, 1), (7, 'TEXT', 'were', true, 2), (7, 'TEXT', 'will be', false, 3),
+                (8, 'TEXT', 'Good night', false, 0), (8, 'TEXT', 'Good morning', true, 1), (8, 'TEXT', 'Goodbye', false, 2),
+                (9, 'TEXT', 'Sorry, could you repeat that?', true, 0), (9, 'TEXT', 'See you later.', false, 1), (9, 'TEXT', 'You are welcome.', false, 2),
+                (10, 'TEXT', 'Animals are falling from the sky', false, 0), (10, 'TEXT', 'It is raining very heavily', true, 1), (10, 'TEXT', 'The weather is nice', false, 2);
+
+            -- Explicit ids were inserted: move the identity sequences past them
+            SELECT setval(pg_get_serial_sequence('category', 'id'), (SELECT max(id) FROM category));
+            SELECT setval(pg_get_serial_sequence('question', 'id'), (SELECT max(id) FROM question));
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/mediaservice
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+# Swagger n'est pas publié en production
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+application:
+  security:
+    jwt:
+      base64-secret: ${JWT_SECRET}
+  minio:
+    endpoint: http://minio:9000
+    # URL de MinIO vue par le navigateur
+    public-url: ${MINIO_PUBLIC_URL}
+    access-key: ${MINIO_ROOT_USER}
+    secret-key: ${MINIO_ROOT_PASSWORD}

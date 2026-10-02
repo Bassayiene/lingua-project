@@ -1,0 +1,27 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://postgres:5432/gateway
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  liquibase:
+    url: jdbc:postgresql://postgres:5432/gateway
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+# Swagger n'est pas publié en production
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+application:
+  services:
+    learning: http://learning-service:8081
+    media: http://media-service:8082
+  security:
+    jwt:
+      base64-secret: ${JWT_SECRET}
+  bootstrap-admin:
+    login: ${ADMIN_LOGIN:}
+    password: ${ADMIN_PASSWORD:}

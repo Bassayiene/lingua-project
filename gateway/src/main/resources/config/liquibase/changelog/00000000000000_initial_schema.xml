@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="00000000000001" author="lingua">
+        <createTable tableName="app_user">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="login" type="varchar(50)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_app_user_login"/>
+            </column>
+            <column name="email" type="varchar(254)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_app_user_email"/>
+            </column>
+            <column name="password_hash" type="varchar(60)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="varchar(50)"/>
+            <column name="last_name" type="varchar(50)"/>
+            <column name="activated" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="authority">
+            <column name="name" type="varchar(50)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="user_authority">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authority_name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="user_authority" columnNames="user_id, authority_name"/>
+        <addForeignKeyConstraint constraintName="fk_user_authority_user"
+                                 baseTableName="user_authority" baseColumnNames="user_id"
+                                 referencedTableName="app_user" referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addForeignKeyConstraint constraintName="fk_user_authority_authority"
+                                 baseTableName="user_authority" baseColumnNames="authority_name"
+                                 referencedTableName="authority" referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="00000000000002" author="lingua">
+        <insert tableName="authority">
+            <column name="name" value="ROLE_USER"/>
+        </insert>
+        <insert tableName="authority">
+            <column name="name" value="ROLE_ADMIN"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/learning
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  liquibase:
+    contexts: ${LIQUIBASE_CONTEXTS:prod}
+
+# Swagger n'est pas publié en production
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+application:
+  security:
+    jwt:
+      base64-secret: ${JWT_SECRET}

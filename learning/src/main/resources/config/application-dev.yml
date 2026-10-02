@@ -1,0 +1,21 @@
+# Développement local : Postgres installé sur la machine.
+# Créer la base une fois : CREATE DATABASE lingua_learning;
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lingua_learning
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:root}
+  liquibase:
+    # "dev" charge les catégories et questions d'exemple
+    contexts: dev
+
+logging:
+  level:
+    com.lingua: DEBUG
+
+application:
+  security:
+    jwt:
+      # Secret de développement uniquement, identique à celui du gateway.
+      base64-secret: wTI9sJJNSLyAX2rO5rIXc/KAGgRYvzuz4OLLpefm035uCPdL4reosAqsc8WoFh810P0XpyO7kPzzzLOeXGqunA==

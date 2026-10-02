@@ -1,0 +1,28 @@
+# Développement local : Postgres installé sur la machine, services lancés avec mvn spring-boot:run.
+# Créer la base une fois : CREATE DATABASE lingua_gateway;
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/lingua_gateway
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:root}
+  liquibase:
+    url: jdbc:postgresql://localhost:5432/lingua_gateway
+    user: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:root}
+
+logging:
+  level:
+    com.lingua: DEBUG
+
+application:
+  services:
+    learning: http://localhost:8081
+    media: http://localhost:8082
+  security:
+    jwt:
+      # Secret de développement uniquement. En production il vient de la variable JWT_SECRET.
+      base64-secret: wTI9sJJNSLyAX2rO5rIXc/KAGgRYvzuz4OLLpefm035uCPdL4reosAqsc8WoFh810P0XpyO7kPzzzLOeXGqunA==
+  bootstrap-admin:
+    login: admin
+    password: admin

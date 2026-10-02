@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Loaded in every environment. The admin can change the values afterwards. -->
+    <changeSet id="00000000000101" author="lingua">
+        <insert tableName="language">
+            <column name="code" value="en"/>
+            <column name="name" value="English"/>
+        </insert>
+
+        <insert tableName="difficulty_setting">
+            <column name="difficulty" value="EASY"/>
+            <column name="points" valueNumeric="10"/>
+            <column name="penalty_points" valueNumeric="5"/>
+            <column name="time_limit_seconds" valueNumeric="30"/>
+        </insert>
+        <insert tableName="difficulty_setting">
+            <column name="difficulty" value="MEDIUM"/>
+            <column name="points" valueNumeric="20"/>
+            <column name="penalty_points" valueNumeric="10"/>
+            <column name="time_limit_seconds" valueNumeric="20"/>
+        </insert>
+        <insert tableName="difficulty_setting">
+            <column name="difficulty" value="HARD"/>
+            <column name="points" valueNumeric="30"/>
+            <column name="penalty_points" valueNumeric="15"/>
+            <column name="time_limit_seconds" valueNumeric="15"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,3 @@
+CREATE DATABASE gateway;
+CREATE DATABASE learning;
+CREATE DATABASE mediaservice;

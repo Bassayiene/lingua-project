@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="00000000000001" author="lingua">
+        <createTable tableName="media_file">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="kind" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bucket" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="object_key" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="filename" type="varchar(255)"/>
+            <column name="content_type" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="size" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="url" type="varchar(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uploaded_by" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_media_file_kind_created_at" tableName="media_file">
+            <column name="kind"/>
+            <column name="created_at" descending="true"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

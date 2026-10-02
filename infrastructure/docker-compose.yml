@@ -1,0 +1,143 @@
+# Déploiement sur le VPS. Lancer depuis ce dossier :
+#
+#   docker compose up -d --build
+#
+# Seuls le gateway (GATEWAY_PORT) et l'API MinIO (MINIO_PORT) sont publiés ; Postgres et les deux
+# microservices ne sont joignables que par le réseau Docker interne. Les ports 80/443 ne sont pas
+# utilisés, pour cohabiter avec un autre projet déjà en service sur le même serveur.
+#
+# Toutes les variables viennent du fichier .env à côté (voir .env.example). S'il en manque une
+# obligatoire, le démarrage est refusé.
+
+name: lingua
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: ${DB_USER:-lingua}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD doit etre defini dans .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Exécuté uniquement à la première initialisation du volume : crée une base par service
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-lingua}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  minio:
+    # minio/minio n'est plus publié sur Docker Hub : copie de la dernière image officielle
+    # (RELEASE.2025-09-07T16-13-09Z, linux/amd64), package public, aucun login nécessaire.
+    image: ${MINIO_IMAGE:-ghcr.io/bassayiene/minio-ci:latest}
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      # Les images et les sons sont lus directement par le navigateur depuis MinIO.
+      # La console d'administration (9001) n'est pas publiée.
+      - "${MINIO_PORT:-9000}:9000"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD doit etre defini dans .env}
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging: *logging
+
+  learning-service:
+    build:
+      context: ../learning
+      dockerfile: src/main/docker/Dockerfile
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_USER: ${DB_USER:-lingua}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD doit etre defini dans .env}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET doit etre defini dans .env (openssl rand -base64 64)}
+      LIQUIBASE_CONTEXTS: ${LIQUIBASE_CONTEXTS:-prod}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8081/management/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    logging: *logging
+
+  media-service:
+    build:
+      context: ../mediaService
+      dockerfile: src/main/docker/Dockerfile
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_USER: ${DB_USER:-lingua}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD doit etre defini dans .env}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET doit etre defini dans .env (openssl rand -base64 64)}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD doit etre defini dans .env}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:?MINIO_PUBLIC_URL doit etre defini dans .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8082/management/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    logging: *logging
+
+  gateway:
+    build:
+      context: ../gateway
+      dockerfile: src/main/docker/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${GATEWAY_PORT:-8090}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_USER: ${DB_USER:-lingua}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD doit etre defini dans .env}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET doit etre defini dans .env (openssl rand -base64 64)}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200}
+      ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD doit etre defini dans .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      learning-service:
+        condition: service_healthy
+      media-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/management/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    logging: *logging
+
+volumes:
+  pgdata:
+  minio_data:

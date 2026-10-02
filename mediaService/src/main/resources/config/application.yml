@@ -1,0 +1,48 @@
+server:
+  port: 8082
+  # Derrière le gateway : respecter les en-têtes X-Forwarded-*
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: mediaService
+  profiles:
+    default: dev
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 60MB
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  liquibase:
+    change-log: classpath:config/liquibase/master.xml
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+
+management:
+  endpoints:
+    web:
+      base-path: /management
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+application:
+  media:
+    image-bucket: learning-images
+    audio-bucket: learning-audio
+    # Les images plus grandes sont réduites pour tenir dans ce cadre
+    image-max-width: 800
+    image-max-height: 600
+    audio-max-size: 5MB
