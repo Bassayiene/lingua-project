@@ -2,9 +2,10 @@
 #
 #   docker compose up -d --build
 #
-# Seuls le gateway (GATEWAY_PORT) et l'API MinIO (MINIO_PORT) sont publiés ; Postgres et les deux
-# microservices ne sont joignables que par le réseau Docker interne. Les ports 80/443 ne sont pas
-# utilisés, pour cohabiter avec un autre projet déjà en service sur le même serveur.
+# Seuls l'interface de test (FRONTEND_PORT), le gateway (GATEWAY_PORT) et l'API MinIO (MINIO_PORT)
+# sont publiés ; Postgres et les deux microservices ne sont joignables que par le réseau Docker
+# interne. Les ports 80/443 ne sont pas utilisés, pour cohabiter avec un autre projet déjà en
+# service sur le même serveur.
 #
 # Toutes les variables viennent du fichier .env à côté (voir .env.example). S'il en manque une
 # obligatoire, le démarrage est refusé.
@@ -136,6 +137,24 @@ services:
       timeout: 10s
       retries: 10
       start_period: 60s
+    logging: *logging
+
+  # Interface de test : pages statiques + relais de /api vers le gateway (même origine, donc pas de CORS)
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8091}:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost/ || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
     logging: *logging
 
 volumes:

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lingua : interface de test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <h1>Lingua <small>interface de test</small></h1>
+    <div id="session"></div>
+</header>
+
+<nav id="tabs" hidden>
+    <button data-tab="play" class="active">Jouer</button>
+    <button data-tab="leaderboard">Classement</button>
+    <button data-tab="admin-questions" data-admin hidden>Questions</button>
+    <button data-tab="admin-settings" data-admin hidden>Réglages</button>
+    <button data-tab="admin-sounds" data-admin hidden>Sons</button>
+    <button data-tab="admin-catalog" data-admin hidden>Catégories</button>
+</nav>
+
+<div id="message" role="status" hidden></div>
+
+<main>
+    <!-- Connexion / inscription -->
+    <section id="auth">
+        <div class="columns">
+            <form id="login-form" class="card">
+                <h2>Se connecter</h2>
+                <label>Login ou email <input name="username" required autocomplete="username"></label>
+                <label>Mot de passe <input name="password" type="password" required autocomplete="current-password"></label>
+                <button type="submit">Connexion</button>
+            </form>
+            <form id="register-form" class="card">
+                <h2>Créer un compte</h2>
+                <label>Login <input name="login" required minlength="3" maxlength="50" pattern="[a-zA-Z0-9][a-zA-Z0-9._\-]{2,49}" autocomplete="username"></label>
+                <label>Email <input name="email" type="email" required autocomplete="email"></label>
+                <label>Mot de passe (8 caractères minimum) <input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+                <button type="submit">Créer le compte</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Jeu -->
+    <section id="tab-play" hidden>
+        <div class="card">
+            <div class="row">
+                <label>Catégorie <select id="play-category"></select></label>
+                <label>Difficulté
+                    <select id="play-difficulty">
+                        <option value="">Toutes</option>
+                        <option value="EASY">Facile</option>
+                        <option value="MEDIUM">Moyen</option>
+                        <option value="HARD">Difficile</option>
+                    </select>
+                </label>
+                <button id="play-next" type="button">Nouvelle question</button>
+                <span class="spacer"></span>
+                <strong id="score" title="Mon score"></strong>
+            </div>
+            <p id="rules" class="muted"></p>
+        </div>
+
+        <div id="question" class="card" hidden>
+            <div class="row">
+                <span id="question-level" class="badge"></span>
+                <span class="spacer"></span>
+                <span id="timer-text"></span>
+            </div>
+            <div class="timer"><div id="timer-bar"></div></div>
+            <h2 id="question-text"></h2>
+            <div id="choices"></div>
+            <p id="result" hidden></p>
+        </div>
+    </section>
+
+    <!-- Classement -->
+    <section id="tab-leaderboard" hidden>
+        <div class="card">
+            <h2>Classement</h2>
+            <table>
+                <thead><tr><th>#</th><th>Apprenant</th><th>Points</th><th>Questions réussies</th></tr></thead>
+                <tbody id="leaderboard"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Admin : questions -->
+    <section id="tab-admin-questions" hidden>
+        <form id="question-form" class="card">
+            <h2>Ajouter une question</h2>
+            <label>Énoncé <input name="text" required maxlength="1000"></label>
+            <div class="row">
+                <label>Catégorie <select name="categoryId" required></select></label>
+                <label>Difficulté
+                    <select name="difficulty">
+                        <option value="EASY">Facile</option>
+                        <option value="MEDIUM">Moyen</option>
+                        <option value="HARD">Difficile</option>
+                    </select>
+                </label>
+            </div>
+            <h3>Choix <small class="muted">au moins 2, cocher le bon</small></h3>
+            <div id="choice-rows"></div>
+            <div class="row">
+                <button type="button" id="add-choice" class="secondary">Ajouter un choix</button>
+                <span class="spacer"></span>
+                <button type="submit">Enregistrer la question</button>
+            </div>
+        </form>
+        <div class="card">
+            <h2>Questions existantes <small id="question-count" class="muted"></small></h2>
+            <div id="question-list"></div>
+        </div>
+    </section>
+
+    <!-- Admin : réglages -->
+    <section id="tab-admin-settings" hidden>
+        <div class="card">
+            <h2>Points, pénalité et chrono par niveau</h2>
+            <table>
+                <thead><tr><th>Niveau</th><th>Points gagnés</th><th>Points perdus</th><th>Temps (s, 5 à 600)</th><th></th></tr></thead>
+                <tbody id="difficulties"></tbody>
+            </table>
+            <p class="muted">Un chrono déjà lancé n'est pas modifié. Une pénalité à 0 désactive la perte de points.</p>
+        </div>
+    </section>
+
+    <!-- Admin : sons -->
+    <section id="tab-admin-sounds" hidden>
+        <div class="columns" id="sounds"></div>
+        <p class="muted">Formats acceptés : MP3, WAV, OGG, 5 Mo maximum.</p>
+    </section>
+
+    <!-- Admin : catalogue -->
+    <section id="tab-admin-catalog" hidden>
+        <form id="category-form" class="card">
+            <h2>Ajouter une catégorie</h2>
+            <div class="row">
+                <label>Langue <select name="languageId" required></select></label>
+                <label>Nom <input name="name" required maxlength="100"></label>
+            </div>
+            <label>Description <input name="description" maxlength="500"></label>
+            <button type="submit">Ajouter</button>
+        </form>
+        <div class="card">
+            <h2>Catégories</h2>
+            <table>
+                <thead><tr><th>Langue</th><th>Nom</th><th>Description</th><th></th></tr></thead>
+                <tbody id="category-list"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

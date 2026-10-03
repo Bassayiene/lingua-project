@@ -17,6 +17,7 @@ navigateur ──▶ gateway :8080 ──┬──▶ learning :8081 ──▶ p
 | `gateway/` | Point d'entrée unique. Comptes, connexion, émission du JWT, routage, CORS. |
 | `learning/` | Langues, catégories, questions et choix, tentatives chronométrées, points, réglages du jeu. |
 | `mediaService/` | Upload des images de choix et des sons, stockés dans MinIO. |
+| `frontend/` | Interface de test : une page statique servie par nginx, qui relaie `/api` vers le gateway. |
 | `infrastructure/` | `docker-compose.yml` pour le serveur. |
 
 Chaque service a sa propre base et revalide lui-même le JWT émis par le gateway (HS512, secret partagé
@@ -72,6 +73,19 @@ Ajouter un choix image : uploader l'image, puis créer la question avec un choix
 `{ "type": "IMAGE", "imageUrl": "<url renvoyée>", "correct": true }`.
 Configurer un son : uploader le fichier audio, puis `PUT /api/admin/settings/sounds/SUCCESS` avec son URL.
 
+## Interface de test
+
+`frontend/` est une page unique (HTML, CSS et JavaScript sans dépendance) qui couvre tout le parcours :
+inscription et connexion, jeu chronométré avec les sons, classement, et côté admin la création de questions
+avec choix texte ou image, les réglages par niveau, les sons et les catégories.
+
+Sur le serveur elle est servie sur `FRONTEND_PORT`. En local, sans nginx :
+
+```bash
+cd frontend && python -m http.server 4200
+# puis ouvrir http://localhost:4200/?api=http://localhost:8080
+```
+
 ## Développement local
 
 Prérequis : JDK 17, Maven, PostgreSQL sur `localhost:5432`, et un MinIO sur `localhost:9000` pour les uploads.
@@ -98,7 +112,8 @@ cd gateway       && mvn spring-boot:run
 
 ## Déploiement sur le VPS
 
-Seuls le gateway (`GATEWAY_PORT`, 8090 par défaut) et l'API MinIO (`MINIO_PORT`, 9000 par défaut) sont publiés.
+Trois ports sont publiés : l'interface de test (`FRONTEND_PORT`, 8091 par défaut), le gateway (`GATEWAY_PORT`, 8090)
+et l'API MinIO (`MINIO_PORT`, 9000).
 Les ports 80 et 443 ne sont pas utilisés : le projet cohabite avec un autre déjà en service sur le même serveur.
 Les images sont construites sur le serveur, il n'y a besoin que de Docker.
 
@@ -114,7 +129,7 @@ docker compose logs -f gateway
 
 À renseigner dans `.env` : `DB_PASSWORD`, `JWT_SECRET` (`openssl rand -base64 64 | tr -d '\n'`), `ADMIN_PASSWORD`,
 `MINIO_ROOT_PASSWORD`, `MINIO_PUBLIC_URL` (par exemple `http://IP_DU_VPS:9000`) et
-`CORS_ALLOWED_ORIGINS` (l'adresse du front). Le démarrage est refusé tant qu'une valeur obligatoire manque.
+`CORS_ALLOWED_ORIGINS` (l'adresse de l'interface de test, par exemple `http://IP_DU_VPS:8091`). Le démarrage est refusé tant qu'une valeur obligatoire manque.
 
 Points d'attention :
 
